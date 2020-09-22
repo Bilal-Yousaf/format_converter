@@ -47,6 +47,7 @@ def main(args):
         for file in glob.glob(args.src_path + '/*.txt'):
             collect_data_from_standard_file(collected_data,
                                             file)
+    print(len(collected_data.keys()))
 
     generated_xml = create_xml_from_collected_data(collected_data)
     with open('out.xml', "w") as f:
