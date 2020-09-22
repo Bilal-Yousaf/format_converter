@@ -1,18 +1,17 @@
+import os
 import argparse
+import glob
 from xml.dom import minidom
 import xml.etree.ElementTree as gfg
 from xml.dom import minidom
 
-def collect_data_from_standard_file(src_path):
-    data = {}
+def collect_data_from_standard_file(data, src_path):
     f = open(src_path, "r")
     for line in f:
         i_name, x, y, w, h, class_name = line.split(',')
         if i_name not in data.keys():
             data[i_name] = []
         data[i_name].append((x, y, w, h, class_name[:-1]))
-
-    return data
 
 def create_xml_from_collected_data(data):
     root = gfg.Element("dataset")
@@ -40,8 +39,15 @@ def create_xml_from_collected_data(data):
 
 
 def main(args):
+    collected_data = {}
 
-    collected_data = collect_data_from_standard_file(args.src_path)
+    if os.path.isfile(args.src_path):
+        collect_data_from_standard_file(collected_data, args.src_path)
+    else:
+        for file in glob.glob(args.src_path + '/*.txt'):
+            collect_data_from_standard_file(collected_data,
+                                            file)
+
     generated_xml = create_xml_from_collected_data(collected_data)
     with open('out.xml', "w") as f:
         f.write(generated_xml)
@@ -54,7 +60,8 @@ if __name__ == '__main__':
                                                  'dlib format.')
     parser.add_argument('-src_path', default='./images.txt', type=str,
                         help='Path of the annotation file with standard format '
-                             'annotations')
+                             'annotations or path of the folder containing '
+                             'multiple such annotation files')
     parser.add_argument('-dest_path', default='./', type=str,
                         help='Path of the folder to store dlib xml annotation f'
                              'ile')
